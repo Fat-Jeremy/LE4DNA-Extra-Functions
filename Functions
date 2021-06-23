@@ -1,0 +1,55 @@
+def com_traj(ftraj, nfrs, nmon, massarr):
+    
+    '''converts a formatted trajectory of monomers from the output of 
+    LE4DNA.format_traj() into a trajectory of the center of mass of each monomer.
+    
+    args:
+    
+    ftraj (numpy array) : output of LE4DNA.format_traj(), trajectory of monomers
+    nfrs (int) : np.shape(ftraj)[1], number of frames in trajectory
+    nmon (int) : np.shape(ftraj)[0]/(3*len(massarr)), number of monomers in molecule
+    massarr (numpy array) : masses of atoms in each monomer. i.e. massarr[i] = mass
+    of ith atom in the monomer.
+    '''
+    
+    import numpy as np
+     
+    monsize = len(massarr)
+    
+    totalM = massarr.sum()
+    
+    com_traj = np.zeros( ( 3*nmon , nfrs ) )
+    
+    for i in range(0, 3*nmon, 3):
+        
+        for j in range(monsize):
+            
+            com_traj[i] += massarr[j]*ftraj[3*j + monsize*i] #xij
+            
+            com_traj[i+1] += massarr[j]*ftraj[3*j + monsize*i + 1] #yij
+            
+            com_traj[i+2] += massarr[j]*ftraj[3*j + monsize*i + 2] #zij
+            
+    com_traj *= 1/totalM
+    
+    return com_traj
+    
+    
+    
+def save_ftraj_g96style(filename, ftraj):
+    
+    import numpy as np
+    
+    atomsxyz = np.shape(ftraj)[0]
+    
+    frames = np.shape(ftraj)[1]
+    
+    atoms = int(atomsxyz/3)
+    
+    output_trajarray = np.array([ ftraj[i:i+3] for i in range(0,atomsxyz,3)])
+    
+    np.savetxt(filename,np.reshape(np.swapaxes(np.swapaxes(output_trajarray,1,2),0,1),(atoms*frames,3)))
+    
+    return output_trajarray
+    
+    
